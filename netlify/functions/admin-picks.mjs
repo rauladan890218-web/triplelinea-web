@@ -33,9 +33,8 @@ async function editorFromRequest(request, settings) {
   const { data: authData, error: authError } = await publicClient.auth.getUser(token);
   if (authError || !authData.user) return { error: json(401, { error: "La sesión no es válida." }) };
   const admin = createClient(settings.SUPABASE_URL, settings.SUPABASE_SERVICE_ROLE_KEY, { auth: { autoRefreshToken: false, persistSession: false } });
-  const { data: profile, error: profileError } = await admin.from("profiles").select("is_admin").eq("user_id", authData.user.id).maybeSingle();
-  if (profileError) throw profileError;
-  if (!profile?.is_admin) return { error: json(403, { error: "Esta cuenta no tiene permisos de editor." }) };
+  const editorEmail = String(authData.user.email || "").trim().toLowerCase();
+  if (editorEmail !== "rauladan890218@gmail.com") return { error: json(403, { error: "Esta cuenta no tiene permisos de editor." }) };
   return { user: authData.user, admin };
 }
 
