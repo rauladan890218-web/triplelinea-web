@@ -45,7 +45,6 @@ const profileMembershipRemaining = document.querySelector("#profile-membership-r
 const toolsLock = document.querySelector("#tools-lock");
 const premiumTools = document.querySelector("#premium-tools");
 const oddsResult = document.querySelector("#odds-result");
-const searchResults = document.querySelector("#search-results");
 const favoriteList = document.querySelector("#favorite-list");
 const liveScores = document.querySelector("#live-scores");
 const liveScoreState = document.querySelector("#live-score-state");
@@ -330,7 +329,6 @@ function setToolsEnabled(enabled, demo = false) {
   premiumTools.hidden = !enabled;
   if (enabled) {
     renderFavorites();
-    if (demo) searchResults.innerHTML = "<p>Modo demostración: puedes buscar las publicaciones creadas desde el panel local.</p>";
   }
 }
 
@@ -460,13 +458,6 @@ function calculateOdds() {
   const net = gross !== null ? gross - stake : null;
   oddsResult.innerHTML = `<strong>Cuota decimal: ${decimal.toFixed(2)} · Cuota americana aproximada: ${toAmerican(decimal)}</strong><br />Probabilidad implícita matemática: ${probability.toFixed(1)}%.${gross !== null ? `<br />Ejemplo con US$${stake.toFixed(2)}: retorno bruto US$${gross.toFixed(2)} y diferencia neta US$${net.toFixed(2)}.` : ""}<br /><small>Es un cálculo informativo; no mide probabilidad real ni asegura un resultado.</small>`;
 }
-function offerDecimal(offer) { return parseOdds(offer.odds); }
-function bestOfferText(offers) {
-  const candidates = offers.map((offer) => ({ offer, decimal: offerDecimal(offer) })).filter((item) => item.decimal);
-  if (!candidates.length) return "Cuotas disponibles para comparar manualmente.";
-  const best = candidates.sort((a, b) => b.decimal - a.decimal)[0];
-  return `Mayor cuota numérica publicada: ${best.offer.book_name} (${best.offer.odds}). Verifica disponibilidad y legalidad antes de visitar un enlace.`;
-}
 function getFavorites() { return readLocal(FAVORITES_KEY); }
 function renderFavorites() {
   const favorites = getFavorites();
@@ -476,36 +467,6 @@ function renderFavorites() {
     renderFavorites();
   }));
 }
-function saveFavorite(pick) {
-  const favorites = getFavorites();
-  if (favorites.some((item) => item.id === pick.id)) { renderFavorites(); return; }
-  localStorage.setItem(FAVORITES_KEY, JSON.stringify([...favorites, { id: pick.id, selection: pick.selection, event: pick.event, sport: pick.sport }]));
-  renderFavorites();
-}
-function renderSearchResults(picks) {
-  if (!picks.length) { searchResults.innerHTML = "<p>No encontramos publicaciones con esa búsqueda.</p>"; return; }
-  searchResults.innerHTML = picks.map((pick) => `<article class="search-result"><div><strong>${escapeHtml(pick.selection)} · ${escapeHtml(pick.event)}</strong><span>${escapeHtml(pick.sport)} · ${escapeHtml(pick.league)} · ${escapeHtml(pick.market)}</span></div><button type="button" data-save-favorite="${escapeHtml(pick.id)}">Guardar</button><p class="compare-summary">${escapeHtml(bestOfferText(pick.offers || []))}</p></article>`).join("");
-  searchResults.querySelectorAll("[data-save-favorite]").forEach((button) => button.addEventListener("click", () => {
-    const pick = picks.find((item) => item.id === button.dataset.saveFavorite);
-    if (pick) saveFavorite(pick);
-  }));
-}
-async function searchPicks() {
-  const query = document.querySelector("#pick-search").value.trim();
-  if (!query) { searchResults.innerHTML = "<p>Escribe un deporte, liga, evento, mercado o selección.</p>"; return; }
-  if (!configured()) {
-    const lower = query.toLowerCase();
-    renderSearchResults(readLocal(DEMO_KEY).filter((pick) => [pick.sport, pick.league, pick.event, pick.team_name, pick.market, pick.selection].join(" ").toLowerCase().includes(lower)).slice(0, 24));
-    return;
-  }
-  if (!state.session || !state.toolsEnabled) { searchResults.innerHTML = "<p>Inicia tu prueba o membresía para usar el buscador.</p>"; return; }
-  searchResults.innerHTML = "<p>Buscando publicaciones verificadas…</p>";
-  const response = await fetch(`${APP_CONFIG.memberLibraryEndpoint}?q=${encodeURIComponent(query)}`, { headers: { Authorization: `Bearer ${state.session.access_token}` } });
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok) { searchResults.innerHTML = `<p>${escapeHtml(data.error || "No pudimos buscar publicaciones.")}</p>`; return; }
-  renderSearchResults(data.picks || []);
-}
-
 document.querySelectorAll("[data-open-account]").forEach((button) => button.addEventListener("click", openAccount));
 document.querySelectorAll("[data-start-trial]").forEach((button) => button.addEventListener("click", startTrial));
 document.querySelectorAll("[data-open-checkout]").forEach((button) => button.addEventListener("click", openApprovedCheckout));
@@ -519,8 +480,6 @@ document.querySelector("#account-logout").addEventListener("click", async () => 
 });
 document.querySelectorAll("[data-tab]").forEach((button) => button.addEventListener("click", () => setTab(button.dataset.tab)));
 document.querySelector("#calculate-odds").addEventListener("click", calculateOdds);
-document.querySelector("#search-picks").addEventListener("click", searchPicks);
-document.querySelector("#pick-search").addEventListener("keydown", (event) => { if (event.key === "Enter") { event.preventDefault(); searchPicks(); } });
 refreshLive.addEventListener("click", () => loadLiveScores(state.session, state.currentPicks));
 
 loginForm.addEventListener("submit", async (event) => {
