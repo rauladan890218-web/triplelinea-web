@@ -19,6 +19,8 @@ const AGE_KEY = "triplelinea-legal-age-confirmed";
 const DEMO_KEY = "triplelinea-demo-picks";
 const DEMO_BRIEFS_KEY = "triplelinea-demo-briefs";
 const FAVORITES_KEY = "triplelinea-favorites";
+const TEAM_LOGO_CACHE_KEY = "triplelinea-team-logo-cache-v1";
+const TEAM_SEARCH_ENDPOINT = "https://www.thesportsdb.com/api/v1/json/123/searchteams.php?t=";
 const state = { supabase: null, session: null, toolsEnabled: false, currentPicks: [] };
 let liveTimer = null;
 
@@ -93,6 +95,52 @@ function defaultTeamCrest(name) {
   const label = escapeXml(initials(name));
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 96"><path d="M40 3 74 15v30c0 23-15 40-34 48C21 85 6 68 6 45V15L40 3Z" fill="${base}" stroke="#f6fbff" stroke-width="4"/><path d="M40 10 67 20v25c0 17-10 31-27 39-17-8-27-22-27-39V20L40 10Z" fill="${accent}" opacity=".46"/><path d="M15 29h50M40 16v61" stroke="#fff" stroke-width="2" opacity=".32"/><text x="40" y="55" text-anchor="middle" fill="#fff" font-size="23" font-family="Arial, sans-serif" font-weight="800">${label}</text></svg>`;
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+}
+
+function readTeamLogoCache() {
+  try { return JSON.parse(localStorage.getItem(TEAM_LOGO_CACHE_KEY) || "{}"); }
+  catch { return {}; }
+}
+
+function writeTeamLogoCache(cache) {
+  try { localStorage.setItem(TEAM_LOGO_CACHE_KEY, JSON.stringify(cache)); }
+  catch { /* El logo sigue funcionando aunque el navegador no permita guardar caché. */ }
+}
+
+async function findOfficialTeamLogo(teamName) {
+  const key = normalize(teamName);
+  if (!key) return "";
+  const cache = readTeamLogoCache();
+  if (Object.prototype.hasOwnProperty.call(cache, key)) return safeLink(cache[key]);
+  try {
+    const response = await fetch(`${TEAM_SEARCH_ENDPOINT}${encodeURIComponent(teamName)}`, { cache: "force-cache" });
+    if (!response.ok) throw new Error("No se pudo consultar el equipo");
+    const data = await response.json();
+    const teams = Array.isArray(data.teams) ? data.teams : [];
+    const exact = teams.find((team) => normalize(team.strTeam) === key)
+      || teams.find((team) => normalize(team.strTeamAlternate || "").split(" ").includes(key))
+      || teams[0];
+    const logo = safeLink(exact?.strBadge || exact?.strLogo || "");
+    cache[key] = logo;
+    writeTeamLogoCache(cache);
+    return logo;
+  } catch {
+    return "";
+  }
+}
+
+async function hydrateOfficialTeamLogos() {
+  const images = Array.from(picksGrid.querySelectorAll("img[data-team-logo]"));
+  await Promise.all(images.map(async (image) => {
+    const teamName = image.dataset.teamName || "";
+    const fallback = image.dataset.fallback || defaultTeamCrest(teamName);
+    image.addEventListener("error", () => {
+      image.removeAttribute("data-team-logo");
+      image.src = fallback;
+    }, { once: true });
+    const officialLogo = await findOfficialTeamLogo(teamName);
+    if (officialLogo) image.src = officialLogo;
+  }));
 }
 
 async function getSupabase() {
@@ -215,8 +263,11 @@ function renderPicks(picks, demo = false) {
   picksGrid.innerHTML = picks.map((pick, index) => {
     const offers = Array.isArray(pick.offers) ? pick.offers : [];
     const teamName = pick.team_name || deriveTeamName(pick.selection);
-    const teamLogo = safeLink(pick.team_logo_url) || defaultTeamCrest(teamName);
-    const teamHeader = `<div class="team-mark"><img src="${teamLogo}" alt="Escudo de ${escapeHtml(teamName)}" /><span>${escapeHtml(teamName)}</span></div>`;
+    const savedLogo = safeLink(pick.team_logo_url);
+    const fallbackLogo = defaultTeamCrest(teamName);
+    const teamLogo = savedLogo || fallbackLogo;
+    const autoLogoAttributes = savedLogo ? "" : ` data-team-logo data-team-name="${escapeHtml(teamName)}" data-fallback="${escapeHtml(fallbackLogo)}"`;
+    const teamHeader = `<div class="team-mark"><img src="${escapeHtml(teamLogo)}"${autoLogoAttributes} alt="Escudo de ${escapeHtml(teamName)}" /><span>${escapeHtml(teamName)}</span></div>`;
     const bookRows = offers.length ? offers.map((offer) => {
       const link = safeLink(offer.link_url);
       const label = escapeHtml(offer.book_name || "Cuota publicada");
@@ -225,6 +276,7 @@ function renderPicks(picks, demo = false) {
     }).join("") : '<div class="book-no-link"><span>Cuotas pendientes de publicar</span></div>';
     return `<article class="pick-card"><div class="pick-meta"><span>${String(index + 1).padStart(2, "0")} · ${escapeHtml(pick.sport || "Deporte")}</span><span>${escapeHtml(pick.league || "")}</span></div>${teamHeader}<h3>${escapeHtml(pick.selection || "Selección editorial")}</h3><p class="pick-event">${escapeHtml(pick.event || "Evento por confirmar")} · ${escapeHtml(pick.market || "Mercado")}</p><p class="pick-analysis">${escapeHtml(pick.analysis || "El editor aún no agregó el contexto de este análisis.")}</p><div class="book-list">${bookRows}</div></article>`;
   }).join("");
+  void hydrateOfficialTeamLogos();
 }
 
 function renderBriefs(briefs, demo = false) {
