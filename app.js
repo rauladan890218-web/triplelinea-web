@@ -48,6 +48,7 @@ const favoriteList = document.querySelector("#favorite-list");
 const liveScores = document.querySelector("#live-scores");
 const liveScoreState = document.querySelector("#live-score-state");
 const refreshLive = document.querySelector("#refresh-live");
+const editorLink = document.querySelector("#editor-link");
 
 function configured() { return Boolean(APP_CONFIG.supabaseUrl && APP_CONFIG.supabaseAnonKey); }
 async function loadRuntimeConfig() {
@@ -330,6 +331,7 @@ async function refreshMembership() {
     renderBriefs(readLocal(DEMO_BRIEFS_KEY).filter((brief) => brief.published_date === localDate()), true);
     setToolsEnabled(true, true);
     await loadLiveScores(null, demoPicks);
+    if (editorLink) editorLink.hidden = true;
     return;
   }
   const supabase = await getSupabase();
@@ -342,8 +344,10 @@ async function refreshMembership() {
     renderBriefs([]);
     renderLiveScores([], [], { message: "Inicia tu prueba para activar el seguimiento." });
     setToolsEnabled(false);
+    if (editorLink) editorLink.hidden = true;
     return;
   }
+  if (editorLink) editorLink.hidden = String(session.user.email || "").trim().toLowerCase() !== "rauladan890218@gmail.com";
   const userName = session.user.user_metadata?.name || session.user.email?.split("@")[0] || "Mi cuenta";
   accountButton.textContent = userName;
   const result = await loadMemberPicks(session);

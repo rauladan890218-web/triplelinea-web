@@ -14,6 +14,7 @@ const mode = document.querySelector("#admin-mode");
 const accessCard = document.querySelector("#admin-access");
 const accessForm = document.querySelector("#admin-login-form");
 const accessStatus = document.querySelector("#admin-access-status");
+const deniedCard = document.querySelector("#admin-denied");
 const editorPanel = document.querySelector("#editor-panel");
 const pickForm = document.querySelector("#pick-form");
 const gameDate = document.querySelector("#game-date");
@@ -364,6 +365,7 @@ document.querySelector("#admin-logout").addEventListener("click", async () => {
   if (supabase) await supabase.auth.signOut();
   state.session = null;
   editorPanel.hidden = true;
+  deniedCard.hidden = true;
   accessCard.hidden = false;
   setMode("ACCESO REQUERIDO");
 });
@@ -381,7 +383,7 @@ async function loadAccess() {
   }
   const supabase = await getSupabase();
   const { data: { session } } = await supabase.auth.getSession();
-  if (!session) { setMode("ACCESO REQUERIDO"); accessCard.hidden = false; editorPanel.hidden = true; return; }
+  if (!session) { setMode("ACCESO REQUERIDO"); deniedCard.hidden = true; accessCard.hidden = false; editorPanel.hidden = true; return; }
   state.session = session;
   const permissionResponse = await fetch(`${APP_CONFIG.adminPicksEndpoint}?date=${encodeURIComponent(gameDate.value)}`, {
     headers: { Authorization: `Bearer ${session.access_token}` },
@@ -390,13 +392,15 @@ async function loadAccess() {
   const permissionData = await permissionResponse.json().catch(() => ({}));
   if (!permissionResponse.ok) {
     setMode("SIN PERMISO DE EDITOR");
-    accessCard.hidden = false;
+    accessCard.hidden = true;
+    deniedCard.hidden = false;
     editorPanel.hidden = true;
     setStatus(accessStatus, permissionData.error || "Esta cuenta no tiene permisos para abrir el editor.", true);
     return;
   }
   state.picks = permissionData.picks || [];
   setMode("EDITOR ACTIVO");
+  deniedCard.hidden = true;
   accessCard.hidden = true;
   editorPanel.hidden = false;
   renderDailyPicks();
