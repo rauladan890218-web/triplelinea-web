@@ -382,13 +382,25 @@ async function loadAccess() {
   const supabase = await getSupabase();
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) { setMode("ACCESO REQUERIDO"); accessCard.hidden = false; editorPanel.hidden = true; return; }
-  // Las funciones privadas vuelven a comprobar el permiso con la clave segura.
-  // Evita bloquear aquí a un editor válido por retrasos de sesión o de RLS.
   state.session = session;
+  const permissionResponse = await fetch(`${APP_CONFIG.adminPicksEndpoint}?date=${encodeURIComponent(gameDate.value)}`, {
+    headers: { Authorization: `Bearer ${session.access_token}` },
+    cache: "no-store",
+  });
+  const permissionData = await permissionResponse.json().catch(() => ({}));
+  if (!permissionResponse.ok) {
+    setMode("SIN PERMISO DE EDITOR");
+    accessCard.hidden = false;
+    editorPanel.hidden = true;
+    setStatus(accessStatus, permissionData.error || "Esta cuenta no tiene permisos para abrir el editor.", true);
+    return;
+  }
+  state.picks = permissionData.picks || [];
   setMode("EDITOR ACTIVO");
   accessCard.hidden = true;
   editorPanel.hidden = false;
-  await Promise.all([loadPicks(), loadBriefs()]);
+  renderDailyPicks();
+  await loadBriefs();
 }
 
 loadRuntimeConfig()
