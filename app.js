@@ -127,12 +127,20 @@ function membershipLabel(status) {
 
 async function loadProfileDetails() {
   if (!state.session) return;
+  const isOwner = String(state.session.user.email || "").trim().toLowerCase() === "rauladan890218@gmail.com";
   profileName.textContent = state.session.user.user_metadata?.name || state.session.user.email?.split("@")[0] || "Usuario";
   activeSessionEmail.textContent = state.session.user.email || "No disponible";
   profileMembershipStatus.textContent = "Cargando…";
   profileMembershipStart.textContent = "—";
   profileMembershipEnd.textContent = "—";
   profileMembershipRemaining.textContent = "Calculando…";
+  if (isOwner) {
+    profileMembershipStatus.textContent = "Propietario y editor principal";
+    profileMembershipStart.textContent = formatProfileDate(state.session.user.created_at);
+    profileMembershipEnd.textContent = "Sin vencimiento";
+    profileMembershipRemaining.textContent = "Acceso completo permanente";
+    return;
+  }
   try {
     const supabase = await getSupabase();
     const [{ data: profile }, { data: access, error }] = await Promise.all([
