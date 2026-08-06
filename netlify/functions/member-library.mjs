@@ -13,10 +13,11 @@ export default async (request) => {
     const publicClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { autoRefreshToken: false, persistSession: false } });
     const { data: authData, error: authError } = await publicClient.auth.getUser(token);
     if (authError || !authData.user) return json(401, { error: "La sesión no es válida." });
+    const isOwner = String(authData.user.email || "").trim().toLowerCase() === "rauladan890218@gmail.com";
     const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, { auth: { autoRefreshToken: false, persistSession: false } });
     const { data: access, error: accessError } = await admin.from("member_access").select("status, trial_ends_at").eq("user_id", authData.user.id).maybeSingle();
     if (accessError) throw accessError;
-    if (!access || !["trialing", "active"].includes(access.status) || (access.status === "trialing" && access.trial_ends_at && new Date(access.trial_ends_at) <= new Date())) return json(403, { error: "Necesitas una prueba o membresía activa." });
+    if (!isOwner && (!access || !["trialing", "active"].includes(access.status) || (access.status === "trialing" && access.trial_ends_at && new Date(access.trial_ends_at) <= new Date()))) return json(403, { error: "Necesitas una prueba o membresía activa." });
     const requested = new URL(request.url).searchParams.get("q") || "";
     const term = requested.replace(/[^\p{L}\p{N}\s-]/gu, " ").trim().slice(0, 80);
     if (!term) return json(400, { error: "Escribe una búsqueda válida." });

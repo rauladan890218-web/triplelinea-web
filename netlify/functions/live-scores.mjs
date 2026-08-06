@@ -14,11 +14,12 @@ async function activeMember(request, settings) {
   const publicClient = createClient(settings.SUPABASE_URL, settings.SUPABASE_ANON_KEY, { auth: { autoRefreshToken: false, persistSession: false } });
   const { data: authData, error: authError } = await publicClient.auth.getUser(token);
   if (authError || !authData.user) return { error: json(401, { error: "La sesión no es válida." }) };
+  const isOwner = String(authData.user.email || "").trim().toLowerCase() === "rauladan890218@gmail.com";
   const admin = createClient(settings.SUPABASE_URL, settings.SUPABASE_SERVICE_ROLE_KEY, { auth: { autoRefreshToken: false, persistSession: false } });
   const { data: access, error } = await admin.from("member_access").select("status, trial_ends_at").eq("user_id", authData.user.id).maybeSingle();
   if (error) throw error;
-  if (!access || !["trialing", "active"].includes(access.status)) return { error: json(403, { error: "No tienes una membresía activa." }) };
-  if (access.status === "trialing" && access.trial_ends_at && new Date(access.trial_ends_at) <= new Date()) {
+  if (!isOwner && (!access || !["trialing", "active"].includes(access.status))) return { error: json(403, { error: "No tienes una membresía activa." }) };
+  if (!isOwner && access.status === "trialing" && access.trial_ends_at && new Date(access.trial_ends_at) <= new Date()) {
     await admin.from("member_access").update({ status: "trial_expired", updated_at: new Date().toISOString() }).eq("user_id", authData.user.id);
     return { error: json(402, { error: "Tu prueba gratuita terminó." }) };
   }
