@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex" />
+    <title>Panel editorial | TripleLínea</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="admin.css" />
+  </head>
+  <body>
+    <div class="risk-bar">Panel editorial: publica información verificable, sin prometer ganancias ni usar enlaces no autorizados.</div>
+    <header class="site-header shell">
+      <a class="brand" href="index.html"><span>TRIPLE</span>LÍNEA</a>
+      <div class="admin-header-actions"><span id="admin-mode" class="mode-pill">COMPROBANDO ACCESO</span><a class="account-button" href="index.html">Ver sitio</a></div>
+    </header>
+
+    <main class="admin-page shell">
+      <section class="admin-intro">
+        <div>
+          <p class="kicker">PANEL PRIVADO DEL EDITOR</p>
+          <h1>Publica hasta tres análisis por día.</h1>
+          <p>Escribe la jugada y tu análisis. La fecha y la hora se añaden automáticamente. Si incluyes una cuota, escríbela dentro de la jugada, por ejemplo: <strong>Equipo A -3.5 (-110)</strong>.</p>
+        </div>
+        <div class="admin-image" role="img" aria-label="Futbolistas originales y escudos de fútbol ficticios en un estadio"></div>
+      </section>
+
+      <section id="admin-access" class="admin-access-card">
+        <p class="kicker">ACCESO</p>
+        <h2>Inicia sesión como editor.</h2>
+        <form id="admin-login-form" class="admin-login-form">
+          <label>Correo de administrador<input name="email" type="email" autocomplete="email" required /></label>
+          <label>Contraseña<input name="password" type="password" autocomplete="current-password" minlength="8" required /></label>
+          <button class="primary-button" type="submit">Entrar al panel</button>
+        </form>
+        <p id="admin-access-status" class="form-status" aria-live="polite"></p>
+      </section>
+
+      <section id="editor-panel" class="editor-panel" hidden>
+        <div class="panel-heading">
+          <div><p class="kicker">PUBLICACIÓN DIARIA</p><h2>Agregar una jugada.</h2></div>
+          <button id="admin-logout" class="secondary-button" type="button">Cerrar sesión</button>
+        </div>
+        <div class="editor-layout">
+          <form id="pick-form" class="pick-form quick-pick-form">
+            <input id="pick-id" name="pick-id" type="hidden" />
+            <input id="game-date" name="game-date" type="hidden" />
+            <input id="starts-at" name="starts-at" type="hidden" />
+            <input name="sport" type="hidden" value="Deportes" />
+            <input name="league" type="hidden" value="Análisis diario" />
+            <input name="event" type="hidden" />
+            <input name="team-name" type="hidden" />
+            <input name="team-logo-url" type="hidden" />
+            <input name="market" type="hidden" value="Selección editorial" />
+
+            <div class="auto-time"><span>SE GUARDARÁ AHORA</span><strong id="auto-datetime">Preparando fecha y hora…</strong></div>
+            <label>Jugada que publicas
+              <input name="selection" maxlength="100" required placeholder="Ej.: Equipo A -3.5 (-110)" autocomplete="off" />
+            </label>
+            <p class="quick-hint">El escudo se crea automáticamente con el nombre de la jugada. Si quieres mostrar la cuota actual, añádela al final entre paréntesis.</p>
+            <label>Tu análisis
+              <textarea name="analysis" maxlength="700" required placeholder="Explica el contexto de forma clara, sin afirmar que el resultado es seguro."></textarea>
+            </label>
+            <label>Enlace externo de la jugada (opcional)<input name="pick-link" type="url" maxlength="500" placeholder="https://…" /></label>
+            <details class="optional-details">
+              <summary>Detalles opcionales</summary>
+              <div class="form-two"><label>Deporte<input name="sport-detail" maxlength="40" placeholder="Ej.: Fútbol" /></label><label>Liga<input name="league-detail" maxlength="60" placeholder="Ej.: Liga española" /></label></div>
+              <label>Evento que se verá debajo de la jugada<input name="event-detail" maxlength="100" placeholder="Ej.: Equipo A vs. Equipo B" /></label>
+              <label>Nombre del equipo para el escudo automático<input name="team-name-detail" maxlength="80" placeholder="Opcional: si no lo escribes, se toma de la jugada" /></label>
+            </details>
+            <button class="primary-button full" type="submit">Publicar jugada</button>
+            <p id="publish-status" class="form-status" aria-live="polite"></p>
+          </form>
+          <aside class="daily-preview">
+            <p class="kicker">PUBLICACIONES DE HOY</p>
+            <h3 id="daily-preview-date">Cargando fecha…</h3>
+            <div id="daily-picks-list" class="daily-picks-list"><p>Las publicaciones de hoy aparecerán aquí.</p></div>
+            <div class="editor-notice"><strong>Regla de publicación:</strong> máximo tres análisis por día. Incluye una cuota solo si la has comprobado antes de publicar.</div>
+          </aside>
+        </div>
+
+        <section class="brief-editor">
+          <div class="panel-heading"><div><p class="kicker">PULSO DEPORTIVO DIARIO</p><h2>Publicar un análisis o nota diaria.</h2></div></div>
+          <div class="brief-editor-grid">
+            <form id="brief-form" class="pick-form">
+              <input id="brief-id" name="brief-id" type="hidden" />
+              <div class="form-two"><label>Fecha<input id="brief-date" name="brief-date" type="date" required /></label><label>Categoría<input name="category" maxlength="50" required placeholder="Ej.: Fútbol" /></label></div>
+              <label>Título<input name="title" maxlength="120" required placeholder="Resumen del análisis diario" /></label>
+              <label>Resumen<textarea name="summary" maxlength="1000" required placeholder="Publica contexto verificable y evita afirmar resultados seguros."></textarea></label>
+              <label>Fuente externa (opcional)<input name="source-url" type="url" maxlength="500" placeholder="https://…" /></label>
+              <button class="primary-button full" type="submit">Publicar análisis diario</button>
+              <p id="brief-status" class="form-status" aria-live="polite"></p>
+            </form>
+            <aside class="daily-preview">
+              <p class="kicker">ANÁLISIS DEL DÍA</p>
+              <h3 id="brief-preview-date">Selecciona una fecha</h3>
+              <div id="daily-brief-list" class="daily-picks-list"><p>Las notas diarias de la fecha aparecerán aquí.</p></div>
+            </aside>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <footer class="shell"><a class="brand" href="index.html"><span>TRIPLE</span>LÍNEA</a><p>Panel de contenido editorial. Las obligaciones legales, de licencias, publicidad y pagos dependen de cada jurisdicción.</p><a href="index.html">Volver al sitio</a></footer>
+    <script src="admin.js"></script>
+  </body>
+</html>

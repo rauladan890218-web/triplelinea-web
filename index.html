@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="TripleLínea: plataforma de análisis deportivo con tres selecciones diarias, comparador de cuotas y acceso por membresía." />
+    <meta name="theme-color" content="#101827" />
+    <title>TripleLínea | Tres análisis al día</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="sports-atmosphere" aria-hidden="true"></div>
+    <div class="risk-bar">Solo para personas con edad legal para apostar en su ubicación. Juega de manera responsable: no hay ganancias garantizadas.</div>
+    <header class="site-header shell">
+      <a class="brand" href="#inicio" aria-label="TripleLínea inicio"><span>TRIPLE</span>LÍNEA</a>
+      <nav aria-label="Navegación principal">
+        <a href="#jugadas">Jugadas</a>
+        <a href="#marcadores">En vivo</a>
+        <a href="#analisis">Análisis diario</a>
+        <a href="#herramientas">Herramientas</a>
+        <a href="#membresia">Membresía</a>
+      </nav>
+      <button class="account-button" data-open-account>Mi cuenta</button>
+    </header>
+
+    <main>
+      <section id="inicio" class="hero shell">
+        <div class="hero-copy">
+          <p class="kicker">ANÁLISIS DEPORTIVO · ACTUALIZADO POR EL EDITOR</p>
+          <h1>Tres lecturas.<br /><em>Una decisión tuya.</em></h1>
+          <p>Recibe hasta tres análisis deportivos diarios, consulta sus cuotas publicadas y revisa únicamente operadores legales disponibles en la ubicación de cada usuario.</p>
+          <div class="hero-actions">
+            <button class="primary-button" data-start-trial>Probar 30 días gratis</button>
+            <a class="secondary-button" href="#jugadas">Ver cómo se muestran</a>
+          </div>
+          <p class="microcopy">Después de la prueba: US$2.99/mes, solo cuando se configure un proveedor de pagos que haya aprobado este modelo. Cancelación clara y sin promesas de resultados.</p>
+        </div>
+        <div class="hero-board" aria-label="Vista previa de tres análisis diarios">
+          <div class="board-top"><span>HOY · VISTA PREVIA</span><span class="live-dot">ACTUALIZABLE</span></div>
+          <div class="board-number">03</div>
+          <p>Análisis diarios, escudos automáticos y seguimiento de resultados en un solo lugar.</p>
+          <div class="mini-lines"><i></i><i></i><i></i></div>
+        </div>
+      </section>
+
+      <section id="jugadas" class="picks-section">
+        <div class="shell section-heading">
+          <div>
+            <p class="kicker">ÁREA DE MIEMBROS</p>
+            <h2>Las tres publicaciones del día.</h2>
+          </div>
+          <div class="membership-state" id="membership-state">Crea una cuenta e inicia la prueba para abrir las publicaciones.</div>
+        </div>
+        <aside class="shell staking-note" aria-label="Nota de uso responsable">
+          <strong>NOTA IMPORTANTE</strong>
+          <p>Estas tres publicaciones son análisis informativos. En las apuestas se gana y se pierde: nada es seguro y el contenido no protege ni garantiza tu dinero. Si decides apostar, usa únicamente dinero que puedas permitirte perder, define un límite personal y no persigas pérdidas. El equipo editorial trabaja para ofrecer contexto claro, no resultados garantizados.</p>
+        </aside>
+        <div id="picks-grid" class="shell picks-grid" aria-live="polite">
+          <article class="pick-placeholder"><span>01</span><h3>Publicación pendiente</h3><p>El editor puede subir hasta tres análisis para este día desde el panel privado.</p></article>
+          <article class="pick-placeholder"><span>02</span><h3>Publicación pendiente</h3><p>Cada jugada muestra un escudo automático y la cuota que el editor haya publicado.</p></article>
+          <article class="pick-placeholder"><span>03</span><h3>Publicación pendiente</h3><p>Los usuarios comparan información; cada decisión y apuesta es personal.</p></article>
+        </div>
+      </section>
+
+      <section id="marcadores" class="live-section">
+        <div class="shell section-heading live-heading">
+          <div>
+            <p class="kicker">SEGUIMIENTO DE PARTIDOS</p>
+            <h2>Marcadores de tus tres publicaciones.</h2>
+          </div>
+          <div class="live-actions"><span id="live-score-state" class="membership-state">Inicia tu prueba para activar el seguimiento.</span><button id="refresh-live" class="secondary-button" type="button">Actualizar</button></div>
+        </div>
+        <div id="live-scores" class="shell live-scores" aria-live="polite">
+          <article class="score-placeholder"><span>EN VIVO</span><h3>Seguimiento disponible para miembros</h3><p>Al conectar una fuente autorizada de resultados, aquí se mostrarán los eventos activos de las publicaciones del día.</p></article>
+        </div>
+      </section>
+
+      <section id="analisis" class="analysis-section">
+        <div class="shell section-heading analysis-heading">
+          <div>
+            <p class="kicker">PULSO DEPORTIVO DIARIO</p>
+            <h2>Un espacio para tus mejores análisis del día.</h2>
+          </div>
+          <p>El editor actualiza esta sección diariamente con contexto, tendencias y notas de cada deporte. No son resultados garantizados ni invitaciones a apostar.</p>
+        </div>
+        <div id="brief-feed" class="shell brief-feed" aria-live="polite">
+          <article class="brief-placeholder"><span>ACTUALIZACIÓN DIARIA</span><h3>Análisis pendiente de publicación</h3><p>La nota editorial del día aparecerá aquí para miembros activos.</p></article>
+          <article class="brief-placeholder"><span>CONTEXTO</span><h3>Lectura de la jornada</h3><p>El editor podrá destacar novedades relevantes y fuentes verificadas.</p></article>
+        </div>
+      </section>
+
+      <section id="como-funciona" class="how shell">
+        <div class="how-intro">
+          <p class="kicker">DISEÑADO PARA PUBLICAR</p>
+          <h2>Controla lo que se publica cada día.</h2>
+          <div class="classic-sports-photo" role="img" aria-label="Grupo diverso de aficionados y atletas en un estadio de estilo clásico"></div>
+        </div>
+        <div class="steps">
+          <article><b>01</b><h3>Publica</h3><p>Desde tu panel escribes la jugada y el contexto. La fecha y hora se completan automáticamente.</p></article>
+          <article><b>02</b><h3>Consulta</h3><p>La membresía muestra el análisis, el escudo automático y la cuota que hayas comprobado.</p></article>
+          <article><b>03</b><h3>Decide</h3><p>La persona consulta el análisis y decide por sí misma. TripleLínea no recibe ni coloca apuestas.</p></article>
+        </div>
+      </section>
+
+      <section id="herramientas" class="tools-section shell" aria-labelledby="tools-title">
+        <div class="tools-heading">
+          <div><p class="kicker">HERRAMIENTAS DE MIEMBROS</p><h2 id="tools-title">Consulta, compara y organiza lo que te interesa.</h2></div>
+          <p>Estas herramientas muestran cálculos matemáticos y publicaciones editoriales. No recomiendan apostar ni sustituyen tu propio criterio.</p>
+        </div>
+        <div id="tools-lock" class="tools-lock">
+          <span>⌁</span><h3>Herramientas para miembros</h3><p>Inicia tu prueba o membresía para usar la calculadora, el comparador y el buscador de publicaciones.</p><button class="primary-button" data-start-trial>Crear cuenta y abrir herramientas</button>
+        </div>
+        <div id="premium-tools" class="premium-tools" hidden>
+          <article class="tool-card odds-tool">
+            <p class="tool-label">CALCULADORA DE CUOTAS</p>
+            <h3>Convierte y entiende una cuota.</h3>
+            <div class="tool-form">
+              <label>Formato<input id="odds-input" inputmode="decimal" placeholder="Ej.: -110, +150 o 1.91" /></label>
+              <label>Monto de referencia (US$)<input id="stake-input" type="number" min="0" step="0.01" placeholder="Ej.: 10" /></label>
+            </div>
+            <button id="calculate-odds" class="secondary-button" type="button">Calcular</button>
+            <div id="odds-result" class="odds-result">Ingresa una cuota para ver su conversión, probabilidad implícita y ejemplo matemático.</div>
+          </article>
+          <article class="tool-card search-tool">
+            <p class="tool-label">BUSCADOR Y COMPARADOR</p>
+            <h3>Busca tus jugadas o deportes favoritos.</h3>
+            <div class="search-row"><input id="pick-search" maxlength="80" placeholder="Ej.: fútbol, total, equipo, liga" /><button id="search-picks" class="primary-button" type="button">Buscar</button></div>
+            <p class="tool-note">La comparación usa solamente las cuotas que el editor haya añadido y marcado como verificadas.</p>
+            <div id="search-results" class="search-results"><p>Busca por deporte, liga, evento, mercado o selección.</p></div>
+          </article>
+          <article class="tool-card favorites-tool">
+            <p class="tool-label">MI LISTA</p>
+            <h3>Guarda lo que quieres revisar.</h3>
+            <p>Tu lista se guarda solo en este dispositivo. No coloca ni prepara apuestas.</p>
+            <div id="favorite-list" class="favorite-list"><p>Aún no guardaste publicaciones.</p></div>
+          </article>
+        </div>
+      </section>
+
+      <section id="membresia" class="membership-section">
+        <div class="shell membership-grid">
+          <div>
+            <p class="kicker">MEMBRESÍA TRIPLELÍNEA</p>
+            <h2>Un mes para conocer el formato.</h2>
+            <p>La cuenta recibe 30 días de acceso de prueba. Luego se muestra el precio de US$2.99 mensuales antes de habilitar cualquier cobro aprobado.</p>
+            <ul class="feature-list">
+              <li>Tres análisis diarios como máximo</li>
+              <li>Comparación de cuotas que el editor verifique</li>
+              <li>Marcadores de las publicaciones al conectar una fuente de datos</li>
+              <li>Acceso en teléfono y computadora</li>
+            </ul>
+          </div>
+          <aside class="price-card">
+            <span>PRUEBA DE ACCESO</span>
+            <strong>30 días</strong>
+            <p>Luego <b>US$2.99 / mes</b></p>
+            <button class="primary-button full" data-start-trial>Crear cuenta y probar</button>
+            <div class="payment-methods" aria-label="Métodos de pago según disponibilidad">
+              <span>CHECKOUT SEGURO</span>
+              <div class="payment-chips"><i>Tarjetas</i><i>Apple Pay</i><i>Google Pay</i><i>PayPal</i><i>Banco</i></div>
+              <p>Al terminar la prueba, el checkout aprobado mostrará solo los métodos permitidos para el país, moneda y perfil del usuario.</p>
+            </div>
+            <button class="secondary-button full" type="button" data-open-checkout>Elegir método de pago</button>
+            <small>Requiere confirmar edad legal, términos, política de privacidad y una solución de cobro que apruebe este tipo de negocio.</small>
+          </aside>
+        </div>
+      </section>
+
+      <section class="responsible shell">
+        <p class="kicker">INFORMACIÓN IMPORTANTE</p>
+        <h2>Esto es contenido informativo, no una apuesta segura.</h2>
+        <p>Las cuotas y los marcadores pueden cambiar o no estar disponibles según el lugar. Nunca presentes resultados como garantizados ni utilices enlaces sin permiso comercial. No permitas el uso por menores de edad o en ubicaciones donde no sea legal.</p>
+      </section>
+    </main>
+
+    <footer class="shell">
+      <a class="brand" href="#inicio"><span>TRIPLE</span>LÍNEA</a>
+      <p>Análisis deportivo editorial. No opera apuestas, no da asesoría financiera y no garantiza resultados.</p>
+      <a href="admin.html">Panel del editor</a>
+    </footer>
+
+    <dialog id="age-dialog" class="age-dialog">
+      <p class="kicker">ACCESO RESPONSABLE</p>
+      <h2>Confirma tu edad legal.</h2>
+      <p>Debes tener la edad legal para apostar en tu ubicación y aceptar que TripleLínea ofrece análisis, no apuestas ni resultados garantizados.</p>
+      <div class="dialog-actions"><button id="confirm-age" class="primary-button">Tengo edad legal</button><button id="deny-age" class="secondary-button">Salir</button></div>
+      <p id="age-message" class="microcopy" aria-live="polite"></p>
+    </dialog>
+
+    <dialog id="account-dialog">
+      <button class="dialog-close" data-close-account aria-label="Cerrar">×</button>
+      <p class="kicker">CUENTA TRIPLELÍNEA</p>
+      <h2>Entra o crea tu acceso.</h2>
+      <p id="account-note">Crea una cuenta para iniciar tu acceso de prueba cuando la configuración segura esté activa.</p>
+      <div class="tabs" role="tablist">
+        <button class="tab active" type="button" data-tab="login">Entrar</button>
+        <button class="tab" type="button" data-tab="signup">Crear cuenta</button>
+      </div>
+      <form id="login-form" class="account-form">
+        <label>Correo electrónico<input name="email" type="email" autocomplete="email" required /></label>
+        <label>Contraseña<input name="password" type="password" autocomplete="current-password" minlength="8" required /></label>
+        <button class="primary-button full" type="submit">Entrar</button>
+      </form>
+      <form id="signup-form" class="account-form" hidden>
+        <label>Nombre público<input name="name" type="text" autocomplete="name" maxlength="60" required /></label>
+        <label>Correo electrónico<input name="email" type="email" autocomplete="email" required /></label>
+        <label>Contraseña<input name="password" type="password" autocomplete="new-password" minlength="8" required /></label>
+        <label class="legal-check"><input name="legal-age" type="checkbox" required /><span>Confirmo que tengo la edad legal aplicable y acepto los términos y el uso responsable.</span></label>
+        <button class="primary-button full" type="submit">Crear mi cuenta</button>
+      </form>
+      <p id="account-status" class="form-status" aria-live="polite"></p>
+    </dialog>
+
+    <script src="app.js"></script>
+  </body>
+</html>
