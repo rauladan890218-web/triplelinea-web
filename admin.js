@@ -310,14 +310,8 @@ async function loadAccess() {
   const supabase = await getSupabase();
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) { setMode("ACCESO REQUERIDO"); accessCard.hidden = false; editorPanel.hidden = true; return; }
-  const { data: profile, error } = await supabase.from("profiles").select("is_admin").eq("user_id", session.user.id).maybeSingle();
-  if (error || !profile?.is_admin) {
-    setMode("SIN PERMISO EDITORIAL");
-    setStatus(accessStatus, "Esta cuenta no tiene permiso de editor. Actívalo en Supabase según README.md.", true);
-    accessCard.hidden = false;
-    editorPanel.hidden = true;
-    return;
-  }
+  // Las funciones privadas vuelven a comprobar el permiso con la clave segura.
+  // Evita bloquear aquí a un editor válido por retrasos de sesión o de RLS.
   state.session = session;
   setMode("EDITOR ACTIVO");
   accessCard.hidden = true;
