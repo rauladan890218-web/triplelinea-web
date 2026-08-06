@@ -71,7 +71,10 @@
               <label>Evento que se verá debajo de la jugada<input name="event-detail" maxlength="100" placeholder="Ej.: Equipo A vs. Equipo B" /></label>
               <label>Nombre del equipo para el escudo automático<input name="team-name-detail" maxlength="80" placeholder="Opcional: si no lo escribes, se toma de la jugada" /></label>
             </details>
-            <button class="primary-button full" type="submit">Publicar jugada</button>
+            <div class="pick-form-actions">
+              <button id="save-pick-button" class="primary-button full" type="submit">Publicar jugada</button>
+              <button id="cancel-pick-edit" class="secondary-button full" type="button" hidden>Cancelar edición</button>
+            </div>
             <p id="publish-status" class="form-status" aria-live="polite"></p>
           </form>
           <aside class="daily-preview">

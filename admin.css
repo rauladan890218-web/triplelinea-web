@@ -6,3 +6,22 @@
 .brief-editor { margin-top:56px; padding-top:48px; border-top:1px solid var(--line); }.brief-editor-grid { display:grid; grid-template-columns:1.15fr .85fr; gap:22px; align-items:start; }
 @media (max-width:900px) { .admin-intro,.editor-layout,.brief-editor-grid { grid-template-columns:1fr; gap:30px; }.daily-preview { position:static; }.admin-login-form { grid-template-columns:1fr; }.admin-login-form .primary-button { width:100%; }.admin-image { min-height:250px; } }
 @media (max-width:540px) { .admin-intro { padding-bottom:50px; }.admin-header-actions .mode-pill { display:none; }.form-two { grid-template-columns:1fr; }.auto-time { align-items:start; flex-direction:column; }.panel-heading { align-items:start; flex-direction:column; } }
+.daily-pick-actions,
+.pick-form-actions {
+  display: flex;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.daily-pick-actions button {
+  flex: 1;
+}
+
+.danger-button {
+  border: 1px solid rgba(255, 120, 100, 0.65);
+  background: rgba(120, 24, 18, 0.28);
+  color: #ffd4cc;
+  border-radius: 999px;
+  padding: 0.65rem 1rem;
+  cursor: pointer;
+}

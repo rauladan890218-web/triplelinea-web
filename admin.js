@@ -21,6 +21,8 @@ const autoDateTime = document.querySelector("#auto-datetime");
 const dailyList = document.querySelector("#daily-picks-list");
 const previewDate = document.querySelector("#daily-preview-date");
 const publishStatus = document.querySelector("#publish-status");
+const savePickButton = document.querySelector("#save-pick-button");
+const cancelPickEdit = document.querySelector("#cancel-pick-edit");
 const briefForm = document.querySelector("#brief-form");
 const briefDate = document.querySelector("#brief-date");
 const briefStatus = document.querySelector("#brief-status");
@@ -77,7 +79,9 @@ async function getSupabase() {
   if (!isConfigured()) return null;
   if (state.supabase) return state.supabase;
   const module = await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm");
-  state.supabase = module.createClient(APP_CONFIG.supabaseUrl, APP_CONFIG.supabaseAnonKey);
+  state.supabase = module.createClient(APP_CONFIG.supabaseUrl, APP_CONFIG.supabaseAnonKey, {
+    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
+  });
   return state.supabase;
 }
 
@@ -93,9 +97,13 @@ function renderDailyPicks() {
     <article class="daily-pick-item">
       <strong>${String(index + 1).padStart(2, "0")} · ${escapeHtml(pick.selection)}</strong>
       <span>${escapeHtml(pick.team_name || deriveTeamName(pick.selection))} · ${escapeHtml(pick.event || "Evento por confirmar")}</span>
-      <button type="button" data-edit-pick="${escapeHtml(pick.id)}">Editar</button>
+      <div class="daily-pick-actions">
+        <button type="button" data-edit-pick="${escapeHtml(pick.id)}">Editar</button>
+        <button type="button" class="danger-button" data-delete-pick="${escapeHtml(pick.id)}">Borrar</button>
+      </div>
     </article>`).join("");
   dailyList.querySelectorAll("[data-edit-pick]").forEach((button) => button.addEventListener("click", () => editPick(button.dataset.editPick)));
+  dailyList.querySelectorAll("[data-delete-pick]").forEach((button) => button.addEventListener("click", () => deletePick(button.dataset.deletePick)));
 }
 
 function renderDailyBriefs() {
@@ -158,8 +166,36 @@ function editPick(id) {
   pickForm.elements["team-name-detail"].value = pick.team_name || "";
   pickForm.elements["pick-link"].value = (pick.offers || []).find((offer) => offer.link_url)?.link_url || "";
   refreshAutomaticDate();
-  setStatus(publishStatus, "Editando una publicación. Se conservará su fecha original.");
+  savePickButton.textContent = "Guardar cambios";
+  cancelPickEdit.hidden = false;
+  setStatus(publishStatus, "Editando esta jugada. Cambia los datos y pulsa Guardar cambios.");
   window.scrollTo({ top: 0, behavior: "smooth" });
+  pickForm.elements.selection.focus();
+}
+
+async function deletePick(id) {
+  const pick = state.picks.find((item) => item.id === id);
+  if (!pick) return;
+  if (!window.confirm(`¿Seguro que quieres borrar la jugada “${pick.selection}”?`)) return;
+  setStatus(publishStatus, "Borrando jugada…");
+  try {
+    if (!isConfigured()) {
+      writeLocal(DEMO_KEY, readLocal(DEMO_KEY).filter((item) => item.id !== id));
+    } else {
+      const response = await fetch(APP_CONFIG.adminPicksEndpoint, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${state.session.access_token}` },
+        body: JSON.stringify({ id }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || "No fue posible borrar la jugada.");
+    }
+    if (pickForm.elements["pick-id"].value === id) resetPickForm();
+    setStatus(publishStatus, "Jugada borrada correctamente.");
+    await loadPicks();
+  } catch (error) {
+    setStatus(publishStatus, error.message || "No fue posible borrar la jugada.", true);
+  }
 }
 
 function editBrief(id) {
@@ -178,8 +214,15 @@ function editBrief(id) {
 function resetPickForm() {
   pickForm.reset();
   pickForm.elements["pick-id"].value = "";
+  savePickButton.textContent = "Publicar jugada";
+  cancelPickEdit.hidden = true;
   refreshAutomaticDate();
 }
+
+cancelPickEdit.addEventListener("click", () => {
+  resetPickForm();
+  setStatus(publishStatus, "Edición cancelada.");
+});
 function resetBriefForm() {
   const date = briefDate.value || appDate();
   briefForm.reset();
@@ -320,5 +363,9 @@ async function loadAccess() {
 }
 
 loadRuntimeConfig()
-  .then(loadAccess)
+  .then(async () => {
+    await loadAccess();
+    const supabase = await getSupabase();
+    if (supabase) supabase.auth.onAuthStateChange(() => loadAccess().catch(() => {}));
+  })
   .catch(() => setStatus(accessStatus, "No pudimos cargar el panel.", true));

@@ -32,6 +32,8 @@ const accountStatus = document.querySelector("#account-status");
 const accountNote = document.querySelector("#account-note");
 const loginForm = document.querySelector("#login-form");
 const signupForm = document.querySelector("#signup-form");
+const activeSession = document.querySelector("#active-session");
+const activeSessionEmail = document.querySelector("#active-session-email");
 const toolsLock = document.querySelector("#tools-lock");
 const premiumTools = document.querySelector("#premium-tools");
 const oddsResult = document.querySelector("#odds-result");
@@ -90,7 +92,9 @@ async function getSupabase() {
   if (!configured()) return null;
   if (state.supabase) return state.supabase;
   const module = await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm");
-  state.supabase = module.createClient(APP_CONFIG.supabaseUrl, APP_CONFIG.supabaseAnonKey);
+  state.supabase = module.createClient(APP_CONFIG.supabaseUrl, APP_CONFIG.supabaseAnonKey, {
+    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
+  });
   return state.supabase;
 }
 
@@ -104,7 +108,22 @@ function setTab(tab) {
     : "Entra con tu cuenta para revisar si tu prueba o membresía está activa.";
   setAccountStatus("");
 }
-function openAccount() { setTab("login"); accountDialog.showModal(); }
+function openAccount() {
+  if (state.session) {
+    loginForm.hidden = true;
+    signupForm.hidden = true;
+    activeSession.hidden = false;
+    document.querySelector(".tabs").hidden = true;
+    accountNote.textContent = "Puedes seguir usando la página sin volver a entrar.";
+    activeSessionEmail.textContent = state.session.user.email || "Cuenta activa";
+    setAccountStatus("Sesión activa.");
+  } else {
+    activeSession.hidden = true;
+    document.querySelector(".tabs").hidden = false;
+    setTab("login");
+  }
+  accountDialog.showModal();
+}
 
 function renderPlaceholders(message) {
   state.currentPicks = [];
@@ -363,6 +382,13 @@ document.querySelectorAll("[data-open-account]").forEach((button) => button.addE
 document.querySelectorAll("[data-start-trial]").forEach((button) => button.addEventListener("click", startTrial));
 document.querySelectorAll("[data-open-checkout]").forEach((button) => button.addEventListener("click", openApprovedCheckout));
 document.querySelector("[data-close-account]").addEventListener("click", () => accountDialog.close());
+document.querySelector("#account-logout").addEventListener("click", async () => {
+  const supabase = await getSupabase();
+  if (supabase) await supabase.auth.signOut();
+  state.session = null;
+  accountDialog.close();
+  await refreshMembership();
+});
 document.querySelectorAll("[data-tab]").forEach((button) => button.addEventListener("click", () => setTab(button.dataset.tab)));
 document.querySelector("#calculate-odds").addEventListener("click", calculateOdds);
 document.querySelector("#search-picks").addEventListener("click", searchPicks);
@@ -398,5 +424,9 @@ document.addEventListener("visibilitychange", () => {
 });
 
 loadRuntimeConfig()
-  .then(refreshMembership)
+  .then(async () => {
+    await refreshMembership();
+    const supabase = await getSupabase();
+    if (supabase) supabase.auth.onAuthStateChange(() => refreshMembership().catch(() => {}));
+  })
   .catch(() => { renderPlaceholders("No pudimos verificar el acceso en este momento."); renderBriefs([]); renderLiveScores([], [], { message: "No pudimos cargar el seguimiento." }); setToolsEnabled(false); });
