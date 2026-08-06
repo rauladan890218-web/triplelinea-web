@@ -30,6 +30,7 @@ const picksGrid = document.querySelector("#picks-grid");
 const briefFeed = document.querySelector("#brief-feed");
 const accountStatus = document.querySelector("#account-status");
 const accountNote = document.querySelector("#account-note");
+const accountTitle = document.querySelector("#account-title");
 const loginForm = document.querySelector("#login-form");
 const signupForm = document.querySelector("#signup-form");
 const activeSession = document.querySelector("#active-session");
@@ -110,6 +111,7 @@ function setTab(tab) {
 }
 function openAccount() {
   if (state.session) {
+    accountTitle.textContent = "Mi cuenta";
     loginForm.hidden = true;
     signupForm.hidden = true;
     activeSession.hidden = false;
@@ -118,6 +120,7 @@ function openAccount() {
     activeSessionEmail.textContent = state.session.user.email || "Cuenta activa";
     setAccountStatus("Sesión activa.");
   } else {
+    accountTitle.textContent = "Entra o crea tu acceso.";
     activeSession.hidden = true;
     document.querySelector(".tabs").hidden = false;
     setTab("login");
