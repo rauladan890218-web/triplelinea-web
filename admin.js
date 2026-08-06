@@ -346,6 +346,13 @@ briefForm.addEventListener("submit", async (event) => {
 });
 
 briefDate.addEventListener("change", () => { resetBriefForm(); loadBriefs(); });
+gameDate.addEventListener("change", () => {
+  pickForm.elements["pick-id"].value = "";
+  savePickButton.textContent = "Publicar jugada";
+  cancelPickEdit.hidden = true;
+  previewDate.textContent = gameDate.value || "Fecha actual";
+  loadPicks().catch(() => setStatus(publishStatus, "No pudimos actualizar la vista previa.", true));
+});
 
 accessForm.addEventListener("submit", async (event) => {
   event.preventDefault();
