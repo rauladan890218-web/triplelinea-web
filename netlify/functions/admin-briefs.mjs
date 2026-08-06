@@ -30,6 +30,15 @@ export default async (request) => {
       if (error) throw error;
       return json(200, { briefs: data || [] });
     }
+    if (request.method === "DELETE") {
+      const body = await request.json().catch(() => ({}));
+      const id = String(body.id || "").trim();
+      if (!id) return json(400, { error: "Falta identificar la nota diaria que quieres borrar." });
+      const { data, error } = await identity.admin.from("daily_briefs").delete().eq("id", id).select("id").maybeSingle();
+      if (error) throw error;
+      if (!data) return json(404, { error: "No encontramos la nota diaria para borrar." });
+      return json(200, { ok: true });
+    }
     if (request.method !== "POST") return json(405, { error: "Método no permitido." });
     const body = await request.json();
     const suppliedUrl = String(body.source_url || "").trim();
