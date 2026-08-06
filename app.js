@@ -35,6 +35,11 @@ const loginForm = document.querySelector("#login-form");
 const signupForm = document.querySelector("#signup-form");
 const activeSession = document.querySelector("#active-session");
 const activeSessionEmail = document.querySelector("#active-session-email");
+const profileName = document.querySelector("#profile-name");
+const profileMembershipStatus = document.querySelector("#profile-membership-status");
+const profileMembershipStart = document.querySelector("#profile-membership-start");
+const profileMembershipEnd = document.querySelector("#profile-membership-end");
+const profileMembershipRemaining = document.querySelector("#profile-membership-remaining");
 const toolsLock = document.querySelector("#tools-lock");
 const premiumTools = document.querySelector("#premium-tools");
 const oddsResult = document.querySelector("#odds-result");
@@ -109,7 +114,62 @@ function setTab(tab) {
     : "Entra con tu cuenta para revisar si tu prueba o membresía está activa.";
   setAccountStatus("");
 }
-function openAccount() {
+function formatProfileDate(value) {
+  if (!value) return "No disponible";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "No disponible";
+  return new Intl.DateTimeFormat("es-US", { dateStyle: "long", timeStyle: "short", timeZone: "America/New_York" }).format(date);
+}
+
+function membershipLabel(status) {
+  return ({ trialing: "Prueba gratuita", active: "Membresía activa", past_due: "Pago pendiente", canceled: "Cancelada", trial_expired: "Prueba terminada" })[status] || "Sin membresía activa";
+}
+
+async function loadProfileDetails() {
+  if (!state.session) return;
+  profileName.textContent = state.session.user.user_metadata?.name || state.session.user.email?.split("@")[0] || "Usuario";
+  activeSessionEmail.textContent = state.session.user.email || "No disponible";
+  profileMembershipStatus.textContent = "Cargando…";
+  profileMembershipStart.textContent = "—";
+  profileMembershipEnd.textContent = "—";
+  profileMembershipRemaining.textContent = "Calculando…";
+  try {
+    const supabase = await getSupabase();
+    const [{ data: profile }, { data: access, error }] = await Promise.all([
+      supabase.from("profiles").select("display_name, created_at").eq("user_id", state.session.user.id).maybeSingle(),
+      supabase.from("member_access").select("status, trial_started_at, trial_ends_at, updated_at").eq("user_id", state.session.user.id).maybeSingle(),
+    ]);
+    if (profile?.display_name) profileName.textContent = profile.display_name;
+    if (error) throw error;
+    if (!access) {
+      profileMembershipStatus.textContent = "Sin membresía activa";
+      profileMembershipStart.textContent = formatProfileDate(profile?.created_at || state.session.user.created_at);
+      profileMembershipEnd.textContent = "No disponible";
+      profileMembershipRemaining.textContent = "Activa tu prueba para comenzar";
+      return;
+    }
+    const startValue = access.status === "trialing" ? access.trial_started_at : access.updated_at;
+    const endDate = access.status === "trialing" && access.trial_ends_at
+      ? new Date(access.trial_ends_at)
+      : access.status === "active" && access.updated_at
+        ? new Date(new Date(access.updated_at).getTime() + 30 * 24 * 60 * 60 * 1000)
+        : null;
+    profileMembershipStatus.textContent = membershipLabel(access.status);
+    profileMembershipStart.textContent = formatProfileDate(startValue);
+    profileMembershipEnd.textContent = endDate ? formatProfileDate(endDate.toISOString()) : "No disponible";
+    if (!endDate) profileMembershipRemaining.textContent = membershipLabel(access.status);
+    else {
+      const remainingMs = endDate.getTime() - Date.now();
+      const remainingDays = Math.max(0, Math.ceil(remainingMs / (24 * 60 * 60 * 1000)));
+      profileMembershipRemaining.textContent = remainingDays > 0 ? `${remainingDays} día${remainingDays === 1 ? "" : "s"}` : "Acceso vencido";
+    }
+  } catch {
+    profileMembershipStatus.textContent = "No pudimos cargar la membresía";
+    profileMembershipRemaining.textContent = "Intenta nuevamente";
+  }
+}
+
+async function openAccount() {
   if (state.session) {
     accountTitle.textContent = "Mi cuenta";
     loginForm.hidden = true;
@@ -119,6 +179,7 @@ function openAccount() {
     accountNote.textContent = "Puedes seguir usando la página sin volver a entrar.";
     activeSessionEmail.textContent = state.session.user.email || "Cuenta activa";
     setAccountStatus("Sesión activa.");
+    await loadProfileDetails();
   } else {
     accountTitle.textContent = "Entra o crea tu acceso.";
     activeSession.hidden = true;

@@ -201,7 +201,14 @@
       </div>
       <div id="active-session" class="account-form" hidden>
         <strong>Tu sesión está abierta.</strong>
-        <p id="active-session-email"></p>
+        <div class="profile-details">
+          <div><span>Nombre</span><strong id="profile-name">—</strong></div>
+          <div><span>Correo</span><strong id="active-session-email">—</strong></div>
+          <div><span>Estado</span><strong id="profile-membership-status">Cargando…</strong></div>
+          <div><span>Inicio</span><strong id="profile-membership-start">—</strong></div>
+          <div><span>Vencimiento</span><strong id="profile-membership-end">—</strong></div>
+          <div class="profile-remaining"><span>Tiempo restante</span><strong id="profile-membership-remaining">Calculando…</strong></div>
+        </div>
         <button id="account-logout" class="secondary-button full" type="button">Cerrar sesión</button>
       </div>
       <form id="login-form" class="account-form">
