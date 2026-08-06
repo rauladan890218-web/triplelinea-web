@@ -116,9 +116,13 @@ function renderDailyBriefs() {
     <article class="daily-pick-item">
       <strong>${escapeHtml(brief.title)}</strong>
       <span>${escapeHtml(brief.category)} · ${escapeHtml(brief.published_date)}</span>
-      <button type="button" data-edit-brief="${escapeHtml(brief.id)}">Editar</button>
+      <div class="daily-pick-actions">
+        <button type="button" data-edit-brief="${escapeHtml(brief.id)}">Editar</button>
+        <button type="button" class="danger-button" data-delete-brief="${escapeHtml(brief.id)}">Borrar</button>
+      </div>
     </article>`).join("");
   dailyBriefList.querySelectorAll("[data-edit-brief]").forEach((button) => button.addEventListener("click", () => editBrief(button.dataset.editBrief)));
+  dailyBriefList.querySelectorAll("[data-delete-brief]").forEach((button) => button.addEventListener("click", () => deleteBrief(button.dataset.deleteBrief)));
 }
 
 async function loadPicks() {
@@ -209,6 +213,31 @@ function editBrief(id) {
   briefForm.elements["source-url"].value = brief.source_url || "";
   setStatus(briefStatus, "Editando un análisis diario.");
   window.scrollTo({ top: document.querySelector(".brief-editor").offsetTop - 24, behavior: "smooth" });
+}
+
+async function deleteBrief(id) {
+  const brief = state.briefs.find((item) => item.id === id);
+  if (!brief) return;
+  if (!window.confirm(`¿Seguro que quieres borrar la nota “${brief.title}”?`)) return;
+  setStatus(briefStatus, "Borrando nota diaria…");
+  try {
+    if (!isConfigured()) {
+      writeLocal(DEMO_BRIEFS_KEY, readLocal(DEMO_BRIEFS_KEY).filter((item) => item.id !== id));
+    } else {
+      const response = await fetch(APP_CONFIG.adminBriefsEndpoint, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${state.session.access_token}` },
+        body: JSON.stringify({ id }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || "No fue posible borrar la nota diaria.");
+    }
+    if (briefForm.elements["brief-id"].value === id) resetBriefForm();
+    setStatus(briefStatus, "Nota diaria borrada correctamente.");
+    await loadBriefs();
+  } catch (error) {
+    setStatus(briefStatus, error.message || "No fue posible borrar la nota diaria.", true);
+  }
 }
 
 function resetPickForm() {
