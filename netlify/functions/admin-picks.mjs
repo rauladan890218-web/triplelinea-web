@@ -59,6 +59,17 @@ export default async (request) => {
       if (!/^\d{4}-\d{2}-\d{2}$/.test(gameDate)) return json(400, { error: "La fecha no es válida." });
       return json(200, { picks: await picksWithOffers(identity.admin, gameDate) });
     }
+    if (request.method === "DELETE") {
+      const body = await request.json().catch(() => ({}));
+      const pickId = String(body.id || "").trim();
+      if (!pickId) return json(400, { error: "Falta identificar la jugada que quieres borrar." });
+      const { error: offersError } = await identity.admin.from("pick_offers").delete().eq("pick_id", pickId);
+      if (offersError) throw offersError;
+      const { data, error } = await identity.admin.from("daily_picks").delete().eq("id", pickId).select("id").maybeSingle();
+      if (error) throw error;
+      if (!data) return json(404, { error: "No encontramos la jugada para borrar." });
+      return json(200, { ok: true });
+    }
     if (request.method !== "POST") return json(405, { error: "Método no permitido." });
     const body = await request.json();
     const gameDate = String(body.game_date || "");
